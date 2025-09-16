@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "fWaO7EgMQ04=",
+  "success": true,
+  "projectFilePath": "/Users/thongphanhduangboudda/Documents/ProAdmin/GithubRepo/AIPOC/AIPOC/AIPOC.csproj",
+  "expectedPackageFiles": [
+    "/Users/thongphanhduangboudda/.nuget/packages/serilog/4.3.0/serilog.4.3.0.nupkg.sha512",
+    "/Users/thongphanhduangboudda/.nuget/packages/serilog.sinks.console/6.0.0/serilog.sinks.console.6.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
