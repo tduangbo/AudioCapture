@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("AIPOC")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e372ffb161fa68b35cfa315830394c999ab9dccc")]
 [assembly: System.Reflection.AssemblyProductAttribute("AIPOC")]
 [assembly: System.Reflection.AssemblyTitleAttribute("AIPOC")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
