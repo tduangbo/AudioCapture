@@ -16,3 +16,10 @@
 /Users/thongphanhduangboudda/Documents/ProAdmin/GithubRepo/AIPOC/AIPOC/obj/Debug/net8.0/AIPOC.csproj.AssemblyReference.cache
 /Users/thongphanhduangboudda/Documents/ProAdmin/GithubRepo/AIPOC/AIPOC/obj/Debug/net8.0/AIPOC.csproj.Up2Date
 /Users/thongphanhduangboudda/Documents/ProAdmin/GithubRepo/AIPOC/AIPOC/bin/Debug/net8.0/Serilog.Sinks.Console.dll
+/Users/thongphanhduangboudda/Documents/ProAdmin/GithubRepo/AIPOC/AIPOC/bin/Debug/net8.0/NAudio.dll
+/Users/thongphanhduangboudda/Documents/ProAdmin/GithubRepo/AIPOC/AIPOC/bin/Debug/net8.0/NAudio.Asio.dll
+/Users/thongphanhduangboudda/Documents/ProAdmin/GithubRepo/AIPOC/AIPOC/bin/Debug/net8.0/NAudio.Core.dll
+/Users/thongphanhduangboudda/Documents/ProAdmin/GithubRepo/AIPOC/AIPOC/bin/Debug/net8.0/NAudio.Midi.dll
+/Users/thongphanhduangboudda/Documents/ProAdmin/GithubRepo/AIPOC/AIPOC/bin/Debug/net8.0/NAudio.Wasapi.dll
+/Users/thongphanhduangboudda/Documents/ProAdmin/GithubRepo/AIPOC/AIPOC/bin/Debug/net8.0/NAudio.WinMM.dll
+/Users/thongphanhduangboudda/Documents/ProAdmin/GithubRepo/AIPOC/AIPOC/obj/Debug/net8.0/AIPOC.sourcelink.json
