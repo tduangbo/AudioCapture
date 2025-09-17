@@ -91,7 +91,8 @@ namespace AIPOC.WindowsAudio
             }
 
             // Create filename with timestamp
-            string fileName = $"windows_audio_capture_{eventData.Timestamp:yyyyMMdd_HHmmss_fff}.wav";
+            // string fileName = $"windows_audio_capture_{eventData.Timestamp:yyyyMMdd_HHmmss_fff}.wav";
+            string fileName = $"windows_audio_capture_{eventData.Timestamp:yyyyMMdd_HHmmss_fff}.mp3";
             string fullPath = Path.Combine(folderName, fileName);
             
             try

@@ -7,13 +7,15 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 using NAudio.Wave;
+using NAudio.Lame;
 
 namespace AIPOC.WindowsAudio
 {
     internal class WindowsAudioCaptureDataSource : DataSource
     {
         public override string Id => "WindowsAudioCaptureDataSource";
-        public override string DataFormat => "audio_wav";
+        public override string DataFormat => "audio_mp3";
+        // public override string DataFormat => "audio_wav";
 
         private Timer? captureTimer;
         private readonly object lockObject = new object();
@@ -241,61 +243,120 @@ namespace AIPOC.WindowsAudio
             }
         }
 
+        // private byte[] CaptureNAudioRealAudio()
+        // {
+        //     try
+        //     {
+        //         // Use NAudio to capture audio directly
+        //         var audioData = new List<byte>();
+        //         var recordingComplete = new ManualResetEventSlim(false);
+                
+        //         // Create memory stream to capture audio
+        //         using var memoryStream = new MemoryStream();
+                
+        //         // Set up NAudio WaveInEvent
+        //         using var waveIn = new WaveInEvent()
+        //         {
+        //             WaveFormat = new WaveFormat(SampleRate, BitsPerSample, Channels)
+        //         };
+
+        //         // Set up wave file writer to memory stream
+        //         using var writer = new WaveFileWriter(memoryStream, waveIn.WaveFormat);
+                
+        //         waveIn.DataAvailable += (sender, e) =>
+        //         {
+        //             writer.Write(e.Buffer, 0, e.BytesRecorded);
+        //         };
+                
+        //         waveIn.RecordingStopped += (sender, e) =>
+        //         {
+        //             recordingComplete.Set();
+        //         };
+
+        //         // Start recording
+        //         waveIn.StartRecording();
+                
+        //         // Record for the specified interval
+        //         Thread.Sleep(CaptureIntervalMs);
+                
+        //         // Stop recording
+        //         waveIn.StopRecording();
+                
+        //         // Wait for recording to complete
+        //         recordingComplete.Wait(1000);
+                
+        //         // Get the audio data
+        //         writer.Flush();
+        //         audioData.AddRange(memoryStream.ToArray());
+                
+        //         Logger?.Information("Successfully captured NAudio real audio: {Size} bytes", audioData.Count);
+        //         return audioData.ToArray();
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         Logger?.Error(ex, "Error during NAudio real audio capture, falling back to mock");
+        //         return GenerateMockAudioData();
+        //     }
+        // }
+
         private byte[] CaptureNAudioRealAudio()
-        {
-            try
             {
-                // Use NAudio to capture audio directly
-                var audioData = new List<byte>();
-                var recordingComplete = new ManualResetEventSlim(false);
-                
-                // Create memory stream to capture audio
-                using var memoryStream = new MemoryStream();
-                
-                // Set up NAudio WaveInEvent
-                using var waveIn = new WaveInEvent()
+                try
                 {
-                    WaveFormat = new WaveFormat(SampleRate, BitsPerSample, Channels)
-                };
+                    // Use NAudio to capture audio directly
+                    var audioData = new List<byte>();
+                    var recordingComplete = new ManualResetEventSlim(false);
 
-                // Set up wave file writer to memory stream
-                using var writer = new WaveFileWriter(memoryStream, waveIn.WaveFormat);
-                
-                waveIn.DataAvailable += (sender, e) =>
-                {
-                    writer.Write(e.Buffer, 0, e.BytesRecorded);
-                };
-                
-                waveIn.RecordingStopped += (sender, e) =>
-                {
-                    recordingComplete.Set();
-                };
+                    // Create memory stream to capture audio
+                    using var memoryStream = new MemoryStream();
 
-                // Start recording
-                waveIn.StartRecording();
-                
-                // Record for the specified interval
-                Thread.Sleep(CaptureIntervalMs);
-                
-                // Stop recording
-                waveIn.StopRecording();
-                
-                // Wait for recording to complete
-                recordingComplete.Wait(1000);
-                
-                // Get the audio data
-                writer.Flush();
-                audioData.AddRange(memoryStream.ToArray());
-                
-                Logger?.Information("Successfully captured NAudio real audio: {Size} bytes", audioData.Count);
-                return audioData.ToArray();
+                    // Set up NAudio WaveInEvent
+                    using var waveIn = new WaveInEvent()
+                    {
+                        WaveFormat = new WaveFormat(SampleRate, BitsPerSample, Channels)
+                    };
+
+                    // Set up the MP3 encoder
+                    // Note: The LameMP3FileWriter handles the conversion from WAV format to MP3
+                    // using var writer = new LameMP3FileWriter(memoryStream, waveIn.WaveFormat);
+                    using var writer = new LameMP3FileWriter(memoryStream, waveIn.WaveFormat, 128);
+
+                    waveIn.DataAvailable += (sender, e) =>
+                    {
+                        // Write the incoming audio buffer to the MP3 writer
+                        writer.Write(e.Buffer, 0, e.BytesRecorded);
+                    };
+
+                    waveIn.RecordingStopped += (sender, e) =>
+                    {
+                        // Signal that recording has stopped
+                        recordingComplete.Set();
+                    };
+
+                    // Start recording
+                    waveIn.StartRecording();
+
+                    // Record for the specified interval
+                    Thread.Sleep(CaptureIntervalMs);
+
+                    // Stop recording
+                    waveIn.StopRecording();
+
+                    // Wait for recording to complete and the final MP3 data to be written
+                    recordingComplete.Wait(1000);
+
+                    // Get the MP3 data from the memory stream
+                    audioData.AddRange(memoryStream.ToArray());
+
+                    Logger?.Information("Successfully captured NAudio real audio and encoded to MP3: {Size} bytes", audioData.Count);
+                    return audioData.ToArray();
+                }
+                catch (Exception ex)
+                {
+                    Logger?.Error(ex, "Error during NAudio real audio capture, falling back to mock");
+                    return GenerateMockAudioData();
+                }
             }
-            catch (Exception ex)
-            {
-                Logger?.Error(ex, "Error during NAudio real audio capture, falling back to mock");
-                return GenerateMockAudioData();
-            }
-        }
 
         private byte[] GenerateMockAudioData()
         {

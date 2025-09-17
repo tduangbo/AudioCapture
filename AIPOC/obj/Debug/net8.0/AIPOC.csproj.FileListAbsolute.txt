@@ -48,3 +48,6 @@ C:\Users\thongphanhduangboudd\Documents\ProAdmin\GithubRepos\AudioCapture\AIPOC\
 C:\Users\thongphanhduangboudd\Documents\ProAdmin\GithubRepos\AudioCapture\AIPOC\obj\Debug\net8.0\AIPOC.pdb
 C:\Users\thongphanhduangboudd\Documents\ProAdmin\GithubRepos\AudioCapture\AIPOC\obj\Debug\net8.0\AIPOC.genruntimeconfig.cache
 C:\Users\thongphanhduangboudd\Documents\ProAdmin\GithubRepos\AudioCapture\AIPOC\obj\Debug\net8.0\ref\AIPOC.dll
+C:\Users\thongphanhduangboudd\Documents\ProAdmin\GithubRepos\AudioCapture\AIPOC\bin\Debug\net8.0\libmp3lame.32.dll
+C:\Users\thongphanhduangboudd\Documents\ProAdmin\GithubRepos\AudioCapture\AIPOC\bin\Debug\net8.0\libmp3lame.64.dll
+C:\Users\thongphanhduangboudd\Documents\ProAdmin\GithubRepos\AudioCapture\AIPOC\bin\Debug\net8.0\NAudio.Lame.dll
