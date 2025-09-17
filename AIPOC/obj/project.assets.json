@@ -571,24 +571,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\thongphanhduangboudd\\.nuget\\packages\\": {},
-    "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
+    "C:\\Users\\tongp\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\thongphanhduangboudd\\Documents\\ProAdmin\\GithubRepos\\AudioCapture\\AIPOC\\AIPOC.csproj",
+      "projectUniqueName": "C:\\Users\\tongp\\Documents\\GithubRepo\\AudioCapture\\AIPOC\\AIPOC.csproj",
       "projectName": "AIPOC",
-      "projectPath": "C:\\Users\\thongphanhduangboudd\\Documents\\ProAdmin\\GithubRepos\\AudioCapture\\AIPOC\\AIPOC.csproj",
-      "packagesPath": "C:\\Users\\thongphanhduangboudd\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\thongphanhduangboudd\\Documents\\ProAdmin\\GithubRepos\\AudioCapture\\AIPOC\\obj\\",
+      "projectPath": "C:\\Users\\tongp\\Documents\\GithubRepo\\AudioCapture\\AIPOC\\AIPOC.csproj",
+      "packagesPath": "C:\\Users\\tongp\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\tongp\\Documents\\GithubRepo\\AudioCapture\\AIPOC\\obj\\",
       "projectStyle": "PackageReference",
-      "fallbackFolders": [
-        "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-      ],
       "configFilePaths": [
-        "C:\\Users\\thongphanhduangboudd\\AppData\\Roaming\\NuGet\\NuGet.Config",
-        "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+        "C:\\Users\\tongp\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -613,8 +608,7 @@
         "enableAudit": "true",
         "auditLevel": "low",
         "auditMode": "direct"
-      },
-      "SdkAnalysisLevel": "9.0.300"
+      }
     },
     "frameworks": {
       "net8.0": {
@@ -653,7 +647,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.206/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
