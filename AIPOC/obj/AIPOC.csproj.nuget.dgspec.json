@@ -1,27 +1,32 @@
 {
   "format": 1,
   "restore": {
-    "/Users/thongphanhduangboudda/Documents/ProAdmin/GithubRepo/AIPOC/AIPOC/AIPOC.csproj": {}
+    "C:\\Users\\thongphanhduangboudd\\Documents\\ProAdmin\\GithubRepos\\AudioCapture\\AIPOC\\AIPOC.csproj": {}
   },
   "projects": {
-    "/Users/thongphanhduangboudda/Documents/ProAdmin/GithubRepo/AIPOC/AIPOC/AIPOC.csproj": {
+    "C:\\Users\\thongphanhduangboudd\\Documents\\ProAdmin\\GithubRepos\\AudioCapture\\AIPOC\\AIPOC.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/thongphanhduangboudda/Documents/ProAdmin/GithubRepo/AIPOC/AIPOC/AIPOC.csproj",
+        "projectUniqueName": "C:\\Users\\thongphanhduangboudd\\Documents\\ProAdmin\\GithubRepos\\AudioCapture\\AIPOC\\AIPOC.csproj",
         "projectName": "AIPOC",
-        "projectPath": "/Users/thongphanhduangboudda/Documents/ProAdmin/GithubRepo/AIPOC/AIPOC/AIPOC.csproj",
-        "packagesPath": "/Users/thongphanhduangboudda/.nuget/packages/",
-        "outputPath": "/Users/thongphanhduangboudda/Documents/ProAdmin/GithubRepo/AIPOC/AIPOC/obj/",
+        "projectPath": "C:\\Users\\thongphanhduangboudd\\Documents\\ProAdmin\\GithubRepos\\AudioCapture\\AIPOC\\AIPOC.csproj",
+        "packagesPath": "C:\\Users\\thongphanhduangboudd\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\thongphanhduangboudd\\Documents\\ProAdmin\\GithubRepos\\AudioCapture\\AIPOC\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "/Users/thongphanhduangboudda/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\thongphanhduangboudd\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
-          "https://api.nuget.org/v3/index.json": {},
-          "https://prometric.pkgs.visualstudio.com/Prometric/_packaging/PrometricFeed/nuget/v3/index.json": {}
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
+          "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net8.0": {
@@ -38,7 +43,8 @@
           "enableAudit": "true",
           "auditLevel": "low",
           "auditMode": "direct"
-        }
+        },
+        "SdkAnalysisLevel": "9.0.300"
       },
       "frameworks": {
         "net8.0": {
@@ -73,7 +79,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.301/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
