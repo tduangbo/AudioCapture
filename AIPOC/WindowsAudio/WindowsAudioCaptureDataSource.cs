@@ -304,7 +304,6 @@ namespace AIPOC.WindowsAudio
                 try
                 {
                     // Use NAudio to capture audio directly
-                    var audioData = new List<byte>();
                     var recordingComplete = new ManualResetEventSlim(false);
 
                     // Create memory stream to capture audio
@@ -318,38 +317,56 @@ namespace AIPOC.WindowsAudio
 
                     // Set up the MP3 encoder
                     // Note: The LameMP3FileWriter handles the conversion from WAV format to MP3
-                    // using var writer = new LameMP3FileWriter(memoryStream, waveIn.WaveFormat);
-                    using var writer = new LameMP3FileWriter(memoryStream, waveIn.WaveFormat, 128);
-
-                    waveIn.DataAvailable += (sender, e) =>
+                    LameMP3FileWriter? writer = null;
+                    
+                    try
                     {
-                        // Write the incoming audio buffer to the MP3 writer
-                        writer.Write(e.Buffer, 0, e.BytesRecorded);
-                    };
+                        writer = new LameMP3FileWriter(memoryStream, waveIn.WaveFormat, 128);
 
-                    waveIn.RecordingStopped += (sender, e) =>
+                        waveIn.DataAvailable += (sender, e) =>
+                        {
+                            // Write the incoming audio buffer to the MP3 writer
+                            writer?.Write(e.Buffer, 0, e.BytesRecorded);
+                        };
+
+                        waveIn.RecordingStopped += (sender, e) =>
+                        {
+                            // Signal that recording has stopped
+                            recordingComplete.Set();
+                        };
+
+                        // Start recording
+                        waveIn.StartRecording();
+
+                        // Record for the specified interval + extra time to account for MP3 encoding overhead
+                        // MP3 encoding can have latency/delay, so we add extra time to ensure we get the full duration
+                        int extraTimeForMp3 = 300; // Add 300ms extra for MP3 encoding overhead
+                        Thread.Sleep(CaptureIntervalMs + extraTimeForMp3);
+
+                        // Stop recording
+                        waveIn.StopRecording();
+
+                        // Wait for recording to complete with more time for MP3 encoding
+                        recordingComplete.Wait(2000);
+
+                        // Properly flush and dispose the MP3 writer to ensure all data is written
+                        writer.Flush();
+                        writer.Dispose();
+                        writer = null;
+
+                        // Small additional wait to ensure MP3 encoder finalization
+                        Thread.Sleep(100);
+
+                        // Get the MP3 data from the memory stream
+                        var audioData = memoryStream.ToArray();
+
+                        Logger?.Information("Successfully captured NAudio real audio and encoded to MP3: {Size} bytes", audioData.Length);
+                        return audioData;
+                    }
+                    finally
                     {
-                        // Signal that recording has stopped
-                        recordingComplete.Set();
-                    };
-
-                    // Start recording
-                    waveIn.StartRecording();
-
-                    // Record for the specified interval
-                    Thread.Sleep(CaptureIntervalMs);
-
-                    // Stop recording
-                    waveIn.StopRecording();
-
-                    // Wait for recording to complete and the final MP3 data to be written
-                    recordingComplete.Wait(1000);
-
-                    // Get the MP3 data from the memory stream
-                    audioData.AddRange(memoryStream.ToArray());
-
-                    Logger?.Information("Successfully captured NAudio real audio and encoded to MP3: {Size} bytes", audioData.Count);
-                    return audioData.ToArray();
+                        writer?.Dispose();
+                    }
                 }
                 catch (Exception ex)
                 {

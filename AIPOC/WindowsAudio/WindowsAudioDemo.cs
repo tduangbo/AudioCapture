@@ -36,7 +36,7 @@ namespace AIPOC.WindowsAudio
                 Modes = new List<string> { "All" },
                 Settings = new Dictionary<string, string>
                 {
-                    { "SampleRate", "44100" },
+                    { "SampleRate", "16000" },
                     { "Channels", "1" },
                     { "CaptureIntervalMs", "2000" } // Capture every 2 seconds
                 }
