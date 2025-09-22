@@ -23,6 +23,14 @@ namespace AIPOC.WindowsAudio
         private WaveInEvent? waveIn;
         private MemoryStream? currentRecording;
         private WaveFileWriter? waveFileWriter;
+        
+        // Continuous recording fields
+        private readonly Queue<byte[]> audioBuffer = new Queue<byte[]>();
+        private readonly List<byte> currentSegmentData = new List<byte>();
+        private int bytesPerSecond;
+        private int targetBytesPerSegment;
+        private LameMP3FileWriter? continuousWriter;
+        private MemoryStream? continuousStream;
 
         public int SampleRate { get; set; } = 44100;
         public int Channels { get; set; } = 1;
@@ -64,8 +72,12 @@ namespace AIPOC.WindowsAudio
             // Check if we're on Windows and can access real audio
             isCapturingRealAudio = await CheckNAudioAccess();
 
-            Logger?.Information("NAudio Windows capture initialized - SampleRate: {SampleRate}, Channels: {Channels}, Interval: {Interval}ms, BitsPerSample: {BitsPerSample}, RealAudio: {RealAudio}", 
-                SampleRate, Channels, CaptureIntervalMs, BitsPerSample, isCapturingRealAudio);
+            // Calculate bytes per second for buffering
+            bytesPerSecond = SampleRate * Channels * (BitsPerSample / 8);
+            targetBytesPerSegment = bytesPerSecond * (CaptureIntervalMs / 1000);
+
+            Logger?.Information("NAudio Windows capture initialized - SampleRate: {SampleRate}, Channels: {Channels}, Interval: {Interval}ms, BitsPerSample: {BitsPerSample}, RealAudio: {RealAudio}, BytesPerSegment: {BytesPerSegment}", 
+                SampleRate, Channels, CaptureIntervalMs, BitsPerSample, isCapturingRealAudio, targetBytesPerSegment);
         }
 
         public override async Task<bool> PrepareAsync(StartEventData eventData)
@@ -95,7 +107,13 @@ namespace AIPOC.WindowsAudio
 
             try
             {
-                // Start timer to capture audio every interval
+                if (isCapturingRealAudio)
+                {
+                    // Start continuous audio recording
+                    await StartContinuousRecording();
+                }
+                
+                // Start timer to process segments every interval
                 captureTimer = new Timer(CaptureAudioSegment, null, CaptureIntervalMs, CaptureIntervalMs);
                 
                 Logger?.Information("NAudio Windows capture started ({Mode})", 
@@ -192,10 +210,85 @@ namespace AIPOC.WindowsAudio
 
                 currentRecording?.Dispose();
                 currentRecording = null;
+                
+                // Stop continuous recording
+                continuousWriter?.Dispose();
+                continuousWriter = null;
+                
+                continuousStream?.Dispose();
+                continuousStream = null;
             }
             catch (Exception ex)
             {
                 Logger?.Warning(ex, "Error stopping current recording");
+            }
+        }
+
+        private async Task StartContinuousRecording()
+        {
+            try
+            {
+                // Initialize continuous recording stream
+                continuousStream = new MemoryStream();
+                
+                // Set up NAudio WaveInEvent for continuous recording
+                waveIn = new WaveInEvent()
+                {
+                    WaveFormat = new WaveFormat(SampleRate, BitsPerSample, Channels)
+                };
+
+                // Set up continuous MP3 writer
+                continuousWriter = new LameMP3FileWriter(continuousStream, waveIn.WaveFormat, 128);
+
+                waveIn.DataAvailable += OnAudioDataAvailable;
+                
+                waveIn.RecordingStopped += (sender, e) =>
+                {
+                    Logger?.Information("Continuous recording stopped");
+                };
+
+                // Start continuous recording
+                waveIn.StartRecording();
+                
+                Logger?.Information("Started continuous audio recording");
+                
+                await Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                Logger?.Error(ex, "Failed to start continuous recording");
+                throw;
+            }
+        }
+
+        private void OnAudioDataAvailable(object? sender, WaveInEventArgs e)
+        {
+            try
+            {
+                lock (lockObject)
+                {
+                    // Write to continuous MP3 stream
+                    continuousWriter?.Write(e.Buffer, 0, e.BytesRecorded);
+                    
+                    // Also buffer the raw data for segment processing
+                    byte[] buffer = new byte[e.BytesRecorded];
+                    Array.Copy(e.Buffer, buffer, e.BytesRecorded);
+                    audioBuffer.Enqueue(buffer);
+                    
+                    // Keep buffer size manageable (max 10 seconds of data)
+                    int maxBufferSize = bytesPerSecond * 10; // 10 seconds
+                    int currentBufferSize = audioBuffer.Sum(b => b.Length);
+                    
+                    while (currentBufferSize > maxBufferSize && audioBuffer.Count > 0)
+                    {
+                        var oldBuffer = audioBuffer.Dequeue();
+                        currentBufferSize -= oldBuffer.Length;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger?.Warning(ex, "Error processing audio data");
             }
         }
 
@@ -211,7 +304,7 @@ namespace AIPOC.WindowsAudio
                     
                     if (isCapturingRealAudio)
                     {
-                        audioData = CaptureNAudioRealAudio();
+                        audioData = ProcessBufferedAudioData();
                     }
                     else
                     {
@@ -240,6 +333,84 @@ namespace AIPOC.WindowsAudio
                 {
                     Logger?.Error(ex, "Error capturing NAudio segment");
                 }
+            }
+        }
+
+        private byte[] ProcessBufferedAudioData()
+        {
+            try
+            {
+                // Collect enough buffered data for one segment
+                currentSegmentData.Clear();
+                int totalBytesNeeded = targetBytesPerSegment;
+                int bytesCollected = 0;
+
+                while (audioBuffer.Count > 0 && bytesCollected < totalBytesNeeded)
+                {
+                    var buffer = audioBuffer.Dequeue();
+                    currentSegmentData.AddRange(buffer);
+                    bytesCollected += buffer.Length;
+                }
+
+                if (bytesCollected == 0)
+                {
+                    Logger?.Warning("No audio data available in buffer");
+                    return Array.Empty<byte>();
+                }
+
+                // Trim to exact segment size if we have too much data
+                if (currentSegmentData.Count > totalBytesNeeded)
+                {
+                    var excess = currentSegmentData.GetRange(totalBytesNeeded, currentSegmentData.Count - totalBytesNeeded);
+                    currentSegmentData.RemoveRange(totalBytesNeeded, currentSegmentData.Count - totalBytesNeeded);
+                    
+                    // Put excess back in buffer for next segment (enqueue at front)
+                    var tempQueue = new Queue<byte[]>();
+                    tempQueue.Enqueue(excess.ToArray());
+                    while (audioBuffer.Count > 0)
+                    {
+                        tempQueue.Enqueue(audioBuffer.Dequeue());
+                    }
+                    while (tempQueue.Count > 0)
+                    {
+                        audioBuffer.Enqueue(tempQueue.Dequeue());
+                    }
+                }
+
+                // Convert PCM data to MP3
+                byte[] mp3Data = ConvertPcmToMp3(currentSegmentData.ToArray());
+                
+                Logger?.Information("Processed buffered audio: {PcmBytes} PCM bytes -> {Mp3Bytes} MP3 bytes", 
+                    currentSegmentData.Count, mp3Data.Length);
+                
+                return mp3Data;
+            }
+            catch (Exception ex)
+            {
+                Logger?.Error(ex, "Error processing buffered audio data");
+                return Array.Empty<byte>();
+            }
+        }
+
+        private byte[] ConvertPcmToMp3(byte[] pcmData)
+        {
+            try
+            {
+                using var pcmStream = new MemoryStream(pcmData);
+                using var mp3Stream = new MemoryStream();
+                
+                var waveFormat = new WaveFormat(SampleRate, BitsPerSample, Channels);
+                using var mp3Writer = new LameMP3FileWriter(mp3Stream, waveFormat, 128);
+                
+                mp3Writer.Write(pcmData, 0, pcmData.Length);
+                mp3Writer.Flush();
+                
+                return mp3Stream.ToArray();
+            }
+            catch (Exception ex)
+            {
+                Logger?.Error(ex, "Error converting PCM to MP3");
+                return Array.Empty<byte>();
             }
         }
 
@@ -298,82 +469,6 @@ namespace AIPOC.WindowsAudio
         //         return GenerateMockAudioData();
         //     }
         // }
-
-        private byte[] CaptureNAudioRealAudio()
-            {
-                try
-                {
-                    // Use NAudio to capture audio directly
-                    var recordingComplete = new ManualResetEventSlim(false);
-
-                    // Create memory stream to capture audio
-                    using var memoryStream = new MemoryStream();
-
-                    // Set up NAudio WaveInEvent
-                    using var waveIn = new WaveInEvent()
-                    {
-                        WaveFormat = new WaveFormat(SampleRate, BitsPerSample, Channels)
-                    };
-
-                    // Set up the MP3 encoder
-                    // Note: The LameMP3FileWriter handles the conversion from WAV format to MP3
-                    LameMP3FileWriter? writer = null;
-                    
-                    try
-                    {
-                        writer = new LameMP3FileWriter(memoryStream, waveIn.WaveFormat, 128);
-
-                        waveIn.DataAvailable += (sender, e) =>
-                        {
-                            // Write the incoming audio buffer to the MP3 writer
-                            writer?.Write(e.Buffer, 0, e.BytesRecorded);
-                        };
-
-                        waveIn.RecordingStopped += (sender, e) =>
-                        {
-                            // Signal that recording has stopped
-                            recordingComplete.Set();
-                        };
-
-                        // Start recording
-                        waveIn.StartRecording();
-
-                        // Record for the specified interval + extra time to account for MP3 encoding overhead
-                        // MP3 encoding can have latency/delay, so we add extra time to ensure we get the full duration
-                        int extraTimeForMp3 = 300; // Add 300ms extra for MP3 encoding overhead
-                        Thread.Sleep(CaptureIntervalMs + extraTimeForMp3);
-
-                        // Stop recording
-                        waveIn.StopRecording();
-
-                        // Wait for recording to complete with more time for MP3 encoding
-                        recordingComplete.Wait(2000);
-
-                        // Properly flush and dispose the MP3 writer to ensure all data is written
-                        writer.Flush();
-                        writer.Dispose();
-                        writer = null;
-
-                        // Small additional wait to ensure MP3 encoder finalization
-                        Thread.Sleep(100);
-
-                        // Get the MP3 data from the memory stream
-                        var audioData = memoryStream.ToArray();
-
-                        Logger?.Information("Successfully captured NAudio real audio and encoded to MP3: {Size} bytes", audioData.Length);
-                        return audioData;
-                    }
-                    finally
-                    {
-                        writer?.Dispose();
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Logger?.Error(ex, "Error during NAudio real audio capture, falling back to mock");
-                    return GenerateMockAudioData();
-                }
-            }
 
         private byte[] GenerateMockAudioData()
         {

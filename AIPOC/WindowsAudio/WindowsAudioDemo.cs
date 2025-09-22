@@ -94,18 +94,19 @@ namespace AIPOC.WindowsAudio
             // string fileName = $"windows_audio_capture_{eventData.Timestamp:yyyyMMdd_HHmmss_fff}.wav";
             string fileName = $"windows_audio_capture_{eventData.Timestamp:yyyyMMdd_HHmmss_fff}.mp3";
             string fullPath = Path.Combine(folderName, fileName);
-            
+
             try
             {
                 File.WriteAllBytes(fullPath, audioData);
                 Console.WriteLine($"Saved Windows audio segment to {fullPath} ({audioData.Length} bytes)");
-                
+
                 // Windows-specific processing options:
                 // - Send to Windows Speech API
                 // - Use Windows Media Foundation
                 // - Integrate with Cortana/Windows Voice Assistant
                 // - Process with Windows ML audio models
                 // - Send to Azure Cognitive Services (Speech-to-Text)
+                // - send to blob storage for Windows audio files
             }
             catch (Exception ex)
             {
