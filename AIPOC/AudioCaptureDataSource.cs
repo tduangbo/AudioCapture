@@ -12,7 +12,8 @@ namespace AIPOC.DataSources
     internal class AudioCaptureDataSource : DataSource
     {
         public override string Id => "AudioCaptureDataSource";
-        public override string DataFormat => "audio_wav";
+        // public override string DataFormat => "audio_wav";
+        public override string DataFormat => "audio_mp3";
 
         private Timer? captureTimer;
         private readonly object lockObject = new object();
